@@ -1,12 +1,12 @@
-package infrastructure.actor
+package infrastructure.actor.sharding
 
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.sharding.typed.ShardingEnvelope
-import scala.concurrent.duration.DurationInt
-import akka.cluster.sharding.typed.scaladsl._
-import scala.language.postfixOps
-import scala.reflect.ClassTag
+import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import akka.util.Timeout
-import akka.actor.typed._
+
+import scala.concurrent.duration.DurationInt
+import scala.language.postfixOps
 
 case class ShardedActor[Command](
     uniqueName: String,
@@ -18,7 +18,7 @@ case class ShardedActor[Command](
     timeout: Timeout = Timeout(20 seconds)
 ) {
 
-  private val shardActor: ActorRef[ShardingEnvelope[Command]] = {
+  val shardActor: ActorRef[ShardingEnvelope[Command]] = {
     val entityTypeKey: EntityTypeKey[Command] =
       EntityTypeKey apply uniqueName
     sharding.init(Entity(entityTypeKey)(createBehavior = { context =>
@@ -27,6 +27,8 @@ case class ShardedActor[Command](
   }
 
   import akka.actor.typed.scaladsl.AskPattern._
+  def tell(id: String)(command: Command) =
+    shardActor.tell(ShardingEnvelope(id, command))
   def ask[Res](id: String)(replyTo: ActorRef[Res] => Command) =
     shardActor.ask[Res](replyTo.andThen(command => ShardingEnvelope(id, command)))
 
