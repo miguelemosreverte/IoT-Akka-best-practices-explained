@@ -1,0 +1,13 @@
+scrape_configs:
+  - job_name: akkaKamon
+    scrape_interval: 5s
+    scrape_timeout: 5s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets:
+          # MAC OSX
+          - host.docker.internal:9095
+          # LINUX
+          - 0.0.0.0:9095
+          - scala:9095

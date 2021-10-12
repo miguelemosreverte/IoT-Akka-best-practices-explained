@@ -17,7 +17,7 @@ libraryDependencies ++= List(
   // #deps
   "com.typesafe.akka" %% "akka-cluster-tools" % AkkaVersion,
   "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
-  "com.typesafe.akka" %% "akka-infrastructure.actor.persistence-typed" % AkkaVersion,
+  "com.typesafe.akka" %% "akka-persistence-typed" % AkkaVersion,
   "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
   "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
   "com.typesafe.akka" %% "akka-stream-kafka" % AlpakkaKafkaVersion,
@@ -28,7 +28,7 @@ libraryDependencies ++= List(
   "ch.qos.logback" % "logback-classic" % "1.2.3"
 )
 libraryDependencies += "org.rocksdb" % "rocksdbjni" % "6.5.2"
-libraryDependencies += "com.typesafe.akka" %% "akka-cluster-infrastructure.actor.sharding-typed" % AkkaVersion
+libraryDependencies += "com.typesafe.akka" %% "akka-cluster-sharding-typed" % AkkaVersion
 libraryDependencies += "org.reflections" % "reflections" % "0.9.10"
 
 fork / run := true

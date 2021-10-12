@@ -9,5 +9,5 @@ lazy val infrastructure = project
     serialization
   )
 
-lazy val `actor` = project.dependsOn(serialization)
+lazy val actor = project.dependsOn(serialization)
 lazy val serialization = project
