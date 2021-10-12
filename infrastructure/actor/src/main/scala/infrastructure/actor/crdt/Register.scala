@@ -13,7 +13,6 @@ import scala.util.{Failure, Success, Try}
 object Register {
   object Integer
       extends Register[NumberFormatException, Int](
-        60,
         any =>
           Try { any.toString.toInt } match {
             case Failure(error: NumberFormatException) =>
@@ -25,18 +24,16 @@ object Register {
 
   object String
       extends Register[Nothing, String](
-        "",
         any => Right(any.toString)
       )
 
 }
 abstract class Register[Error, Register](
-    default: Register,
     recover: Any => Either[Error, Register]
 ) {
 
-  def apply(name: String)(implicit context: ActorContext[_]) =
-    new Wrapper()(context.executionContext, context.system.scheduler, context.spawnAnonymous(behavior(name)))
+  def apply(name: String, default: Register)(implicit context: ActorContext[_]) =
+    new Wrapper()(context.executionContext, context.system.scheduler, context.spawnAnonymous(behavior(name, default)))
 
   class Wrapper(
       implicit
@@ -96,7 +93,7 @@ abstract class Register[Error, Register](
   import Command._
   import InternalCommand._
 
-  def behavior(name: String): Behavior[Command] =
+  def behavior(name: String, default: Register): Behavior[Command] =
     Behaviors.setup[Command] { context =>
       val key: LWWRegisterKey[Register] = LWWRegisterKey(name)
       implicit val node: SelfUniqueAddress = DistributedData(context.system).selfUniqueAddress
