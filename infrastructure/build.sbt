@@ -8,9 +8,13 @@ lazy val infrastructure = project
     actor,
     kafka,
     serialization,
-    monitoring
+    monitoring,
+    http,
+    http_kafka
   )
 
+lazy val http_kafka = project.dependsOn(kafka, http, monitoring)
+lazy val http = project.dependsOn(serialization, actor, monitoring)
 lazy val actor = project.dependsOn(serialization)
 lazy val kafka = project.dependsOn(serialization)
 lazy val serialization = project
