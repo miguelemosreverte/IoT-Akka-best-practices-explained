@@ -32,7 +32,7 @@ object Device {
   ) extends hasDevice
       with hasRecords
 
-  def apply(inform: Float => Unit)(id: String): Behavior[commands] = {
+  def apply(inform: DeviceRecord => Unit)(id: String): Behavior[commands] = {
     Behaviors.setup { implicit context =>
       val timeWindow: Register.Integer = Register.Integer("test", 1)
 
@@ -54,7 +54,11 @@ object Device {
               state match {
                 case state: hasDevice with hasRecords =>
                   val average = state.records.map(_.currentValue).sum / state.records.size
-                  inform(average)
+                  inform(
+                    state.records.last.copy(
+                      currentValue = average
+                    )
+                  )
                 case _ =>
               }
               println(s"Scheduling next inform in ${in}")

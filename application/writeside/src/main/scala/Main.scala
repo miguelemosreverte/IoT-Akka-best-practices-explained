@@ -10,14 +10,12 @@ import java.util.UUID
 
 object Main extends App {
 
-  implicit val system = ActorSystem("example").toTyped
+  implicit val classicSystem = ActorSystem("example")
+  implicit val system = classicSystem.toTyped
   implicit val clusterSharding = ClusterSharding.apply(system)
+  implicit val ec = classicSystem.dispatcher
 
   val timeWindow: Register.Integer = Register.Integer("test", 1)
-  val device = ShardedActor.apply("a", Device.apply(println, timeWindow))
-
-  device.ask("1")(ref => commands.AddDevice(domain.Device.example, ref))
-  device.ask("1")(ref => commands.AddDeviceRecord(domain.DeviceRecord.example, ref))
 
   import infrastructure.kafka.KafkaSupport.Implicit._
   implicit val kafkaRequirements = KafkaRequirements(
@@ -25,6 +23,15 @@ object Main extends App {
     system.classicSystem,
     println
   )
+
+  val publishAverageDeviceTemperature: domain.DeviceRecord => Unit = deviceRecord =>
+    domain.DeviceRecord.kafka.producer.plain
+      .apply(kafkaRequirements.kafkaBootstrapServer.url)(topic = "DeviceAverageTemperature", deviceRecord)
+
+  val device = ShardedActor.apply("a", Device.apply(publishAverageDeviceTemperature, timeWindow))
+
+  device.ask("1")(ref => commands.AddDevice(domain.Device.example, ref))
+  device.ask("1")(ref => commands.AddDeviceRecord(domain.DeviceRecord.example, ref))
 
   domain.Device.kafka.consumer.transactional.run("DeviceCreation", "writeside") { newDevice =>
     device.ask(newDevice.deviceId.toString)(ref => commands.AddDevice(newDevice, ref))
