@@ -19,7 +19,10 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "42.2.8",
   "io.getquill" %% "quill-jdbc" % "3.10.0"
 )
+libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.2.3"
+
 libraryDependencies += ("infrastructure" %% "microservice" % "1.0.0")
 libraryDependencies += ("application" %% "writeside" % "1.0.0")
+libraryDependencies += ("domain" %% "domain" % "1.0.0")
 fork / run := true
 connectInput / run := true
