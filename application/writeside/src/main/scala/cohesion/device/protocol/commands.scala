@@ -2,8 +2,6 @@ package cohesion.device.protocol
 
 import akka.actor.typed.ActorRef
 import domain._
-
-import java.util.UUID
 import scala.concurrent.duration.FiniteDuration
 
 sealed trait commands
@@ -15,12 +13,12 @@ object commands {
 
   case class AddDevice(
       device: Device,
-      replyTo: ActorRef[akka.Done]
+      replyTo: ActorRef[Either[String, Unit]]
   ) extends commands
 
   case class AddDeviceRecord(
       device: DeviceRecord,
-      replyTo: ActorRef[akka.Done]
+      replyTo: ActorRef[Either[String, Unit]]
   ) extends commands
 
 }

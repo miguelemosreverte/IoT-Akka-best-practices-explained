@@ -68,16 +68,16 @@ object Device {
 
             case commands.AddDevice(device, replyTo) =>
               Effect.persist(CreatedDevice(device)).thenRun { state =>
-                replyTo ! akka.Done
+                replyTo ! Right()
               }
             case commands.AddDeviceRecord(record, replyTo) =>
               state match {
                 case state: hasDevice with hasRecords =>
                   Effect.persist(DeviceRecords(state.device, state.records :+ record)).thenRun { state =>
-                    replyTo ! akka.Done
+                    replyTo ! Right()
                   }
                 case _ =>
-                  replyTo ! akka.Done
+                  replyTo ! Right()
                   Effect.none
               }
           }
