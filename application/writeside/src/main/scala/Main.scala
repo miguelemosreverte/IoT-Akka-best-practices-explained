@@ -5,14 +5,16 @@ import cohesion.device.Device
 import cohesion.device.protocol.commands
 import infrastructure.actor.sharding.ShardedActor
 import infrastructure.kafka.KafkaSupport.Protocol.{KafkaBootstrapServer, KafkaRequirements}
-
+import infrastructure.actor.crdt.Register
 import java.util.UUID
 
 object Main extends App {
 
   implicit val system = ActorSystem("example").toTyped
   implicit val clusterSharding = ClusterSharding.apply(system)
-  val device = ShardedActor.apply("a", Device.apply(println))
+
+  val timeWindow: Register.Integer = Register.Integer("test", 1)
+  val device = ShardedActor.apply("a", Device.apply(println, timeWindow))
 
   device.ask("1")(ref => commands.AddDevice(domain.Device.example, ref))
   device.ask("1")(ref => commands.AddDeviceRecord(domain.DeviceRecord.example, ref))
@@ -31,4 +33,7 @@ object Main extends App {
   domain.DeviceRecord.kafka.consumer.transactional.run("DeviceRecord", "writeside") { deviceRecord =>
     device.ask(deviceRecord.deviceId.toString)(ref => commands.AddDeviceRecord(deviceRecord, ref))
   }
+
+  infrastructure.http.Server.apply(TimeWindowEndpoint(timeWindow), "0.0.0.0", 8080)
+
 }
