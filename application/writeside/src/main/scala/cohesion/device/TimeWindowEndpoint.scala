@@ -9,11 +9,11 @@ import infrastructure.actor.crdt.Register
 import scala.concurrent.{ExecutionContext, Future}
 
 object TimeWindowEndpoint {
-  def route(timeWindow: Register.Integer)(implicit ec: ExecutionContext) = {
+  def apply(timeWindow: Register.Integer.Wrapper)(implicit ec: ExecutionContext) = {
     get {
       path("time_window" / IntNumber) { window: Int =>
         complete {
-          timeWindow.set(window)
+          timeWindow.set(window).map(_.toString)
         }
       }
     }

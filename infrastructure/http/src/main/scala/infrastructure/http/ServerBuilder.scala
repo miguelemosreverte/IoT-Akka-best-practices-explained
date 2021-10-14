@@ -23,6 +23,7 @@ class ServerBuilder(
   import ServerBuilder.Protocol.`Building a Server`.`Step by Step`.{AddRoute, StartServer}
   import akka.actor.typed.scaladsl.AskPattern._
   implicit val timeout = Timeout(2.seconds)
+  implicit val classicSystem = actorSystem.classicSystem
 
   private def actor = clusterSingleton.init(
     SingletonActor.apply(ServerBuilder.apply(), "ServerBuilder")
@@ -86,7 +87,7 @@ object ServerBuilder {
       routes: Seq[Route] = Seq.empty,
       started: Option[ServerBinding] = None,
       starting: Boolean = false
-  ): Behavior[`Building a Server`] =
+  )(implicit actorSystem: akka.actor.ActorSystem): Behavior[`Building a Server`] =
     Behaviors.receive { (context, message) =>
       message match {
         case AddRoute(description: String, route, ref) =>

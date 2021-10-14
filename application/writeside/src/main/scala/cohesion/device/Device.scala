@@ -34,7 +34,7 @@ object Device {
 
   def apply(inform: DeviceRecord => Unit)(id: String): Behavior[commands] = {
     Behaviors.setup { implicit context =>
-      val timeWindow: Register.Integer = Register.Integer("test", 1)
+      val timeWindow = Register.Integer("test", 1)
 
       def scheduleNextInform(in: FiniteDuration) =
         context.pipeToSelf(timeWindow.get) {

@@ -83,9 +83,7 @@ object Server {
       route: Route,
       interface: String,
       port: Int
-  ): Future[Http.ServerBinding] = {
-    println("STARTING SERVER")
-    implicit val (actorSystem) = common
+  )(implicit actorSystem: ActorSystem): Future[Http.ServerBinding] = {
     val server: Future[Http.ServerBinding] = Http().bindAndHandle(route, interface, port)
     import scala.concurrent.ExecutionContext.Implicits.global
     server onComplete onComplete(interface, port)
