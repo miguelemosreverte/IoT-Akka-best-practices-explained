@@ -7,3 +7,21 @@
 /.sbtopts
 **/target/**
 *.sc
+
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+rocksdb
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
