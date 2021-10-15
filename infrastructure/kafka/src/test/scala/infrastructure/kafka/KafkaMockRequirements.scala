@@ -27,6 +27,7 @@ object KafkaMockRequirements {
   ): KafkaMockRequirements = {
     var topics: Map[String, Seq[String => Unit]] = Map.empty
     var eventLog: Seq[String] = Seq.empty
+    val messagesPerTopic: collection.mutable.Map[String, Seq[String]] = collection.mutable.Map.empty
 
     def messageQueue: SourceQueue[(String, String)] =
       Source
@@ -34,7 +35,9 @@ object KafkaMockRequirements {
         .to(Flow[(String, String)].to(Sink.foreach {
           case (topic, message) =>
             topics.get(topic) match {
-              case Some(topic) => topic.foreach(_(message))
+              case Some(subscriptions) =>
+                messagesPerTopic(topic) = messagesPerTopic(topic) :+ message
+                subscriptions.foreach(_(message))
               case None =>
                 topics = topics.+((topic, Seq.empty))
             }
@@ -42,11 +45,12 @@ object KafkaMockRequirements {
         .run
 
     val onMessage: String => String => Unit = { topic => message =>
+      println("RECEIVED MESSAGE")
       topics
         .filter(_._1 == topic)
         .foreach(_._2 foreach (_(message)))
     }
-    val receiveMessagesFrom: SubscribeTo => Unit = { (s: SubscribeTo) =>
+    def receiveMessagesFrom: SubscribeTo => Unit = { (s: SubscribeTo) =>
       topics = topics.+(
         (
           s.topic,
@@ -60,10 +64,11 @@ object KafkaMockRequirements {
             )
             eventLog = eventLog :+ message
             s.receiveMessages(message)
-
           })
         )
       )
+      println(s"messagesPerTopic: ${messagesPerTopic}")
+      messagesPerTopic.get(s.topic).map(_.foreach(s.receiveMessages))
     }
     KafkaMockRequirements(onMessage, receiveMessagesFrom, () => topics, () => eventLog, messageQueue)
   }
