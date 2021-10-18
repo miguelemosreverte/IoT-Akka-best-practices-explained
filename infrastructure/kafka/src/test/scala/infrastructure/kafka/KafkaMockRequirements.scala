@@ -29,14 +29,13 @@ object KafkaMockRequirements {
     var eventLog: Seq[String] = Seq.empty
     val messagesPerTopic: collection.mutable.Map[String, Seq[String]] = collection.mutable.Map.empty
 
-    def messageQueue: SourceQueue[(String, String)] =
+    val messageQueue: SourceQueue[(String, String)] =
       Source
         .queue(bufferSize = 1024, OverflowStrategy.backpressure)
         .to(Flow[(String, String)].to(Sink.foreach {
           case (topic, message) =>
             topics.get(topic) match {
               case Some(subscriptions) =>
-                messagesPerTopic(topic) = messagesPerTopic(topic) :+ message
                 subscriptions.foreach(_(message))
               case None =>
                 topics = topics.+((topic, Seq.empty))
@@ -45,7 +44,10 @@ object KafkaMockRequirements {
         .run
 
     val onMessage: String => String => Unit = { topic => message =>
-      println("RECEIVED MESSAGE")
+      messagesPerTopic(topic) = messagesPerTopic.get(topic) match {
+        case Some(messages) => messages :+ message
+        case None => Seq(message)
+      }
       topics
         .filter(_._1 == topic)
         .foreach(_._2 foreach (_(message)))
@@ -67,7 +69,6 @@ object KafkaMockRequirements {
           })
         )
       )
-      println(s"messagesPerTopic: ${messagesPerTopic}")
       messagesPerTopic.get(s.topic).map(_.foreach(s.receiveMessages))
     }
     KafkaMockRequirements(onMessage, receiveMessagesFrom, () => topics, () => eventLog, messageQueue)

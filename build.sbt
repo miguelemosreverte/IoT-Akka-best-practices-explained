@@ -5,7 +5,7 @@ lazy val root = project
     version := "0.1.0",
     scalaVersion := "2.13.6"
   )
-  .aggregate(domain, infrastructure)
+  .aggregate(domain, application, infrastructure)
 
 lazy val `infrastructure` = project
 
@@ -17,3 +17,7 @@ lazy val `serialization` = (project in file(".") / "infrastructure" / "serializa
 
 lazy val `domain` = project
   .dependsOn(serialization)
+
+lazy val e2e = project.dependsOn(
+  application
+)

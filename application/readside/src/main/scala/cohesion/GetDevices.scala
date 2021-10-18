@@ -1,8 +1,11 @@
-import akka.http.scaladsl.model.{HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
-import play.api.libs.json.{Format, Json, Reads, Writes}
-import mongodb.schema.DeviceTemperature
+package cohesion
+
+import akka.http.scaladsl.server.Directives.{complete, get, path}
+import cohesion.mongodb.schema.DeviceTemperature
+import play.api.libs.json.{Json, Writes}
+
 import scala.concurrent.{ExecutionContext, Future}
+import akka.http.scaladsl.server.Directives._
 
 object GetDevices {
   implicit val json: Writes[Seq[DeviceTemperature]] = Writes.seq(DeviceTemperature.json)

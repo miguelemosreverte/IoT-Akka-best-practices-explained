@@ -91,7 +91,6 @@ object ServerBuilder {
     Behaviors.receive { (context, message) =>
       message match {
         case AddRoute(description: String, route, ref) =>
-          println(s"ADDED ROUTE -- ${description}")
           ref ! akka.Done
           ServerBuilder.apply(routes :+ route)
         case s @ StartServer(interface, port, ref) =>
@@ -100,29 +99,20 @@ object ServerBuilder {
 
             apply(routes, started, starting = true)
           } else {
-            println("STARTED SERVER")
             started match {
               case Some(binding) =>
-                println("HERE 0.1")
                 Behaviors.same
               case None =>
                 if (routes.isEmpty) {
-                  println("HERE 0.2")
                   context.self ! Failed("No routes to serve", ref)
                 } else {
-                  println("HERE 1")
                   val route = routes.reduce(_ ~ _)
-                  println("HERE 1.1")
                   implicit val executionContext: ExecutionContextExecutor = context.executionContext
-                  println("HERE 1.2")
                   context.scheduleOnce(FiniteDuration(5L, TimeUnit.SECONDS), context.self, s)
-                  println("HERE 2")
                   context.pipeToSelf(Server(route, interface, port)) {
                     case Failure(exception) =>
-                      println("HERE 2.1")
                       Failed(exception.getMessage, ref)
                     case Success(binding) =>
-                      println("HERE 2.2")
                       Started(binding, ref)
                   }
                 }

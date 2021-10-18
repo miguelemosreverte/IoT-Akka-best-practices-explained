@@ -37,14 +37,6 @@ object KafkaMock {
       }
     }
 
-    /*implicit def toMock[Command: ClassTag, Response: ClassTag](
-        implicit
-        commandSerialization: Serialization[Command],
-        responseSerialization: Serialization[Response],
-        kafkaMockRequirements: KafkaMockRequirements,
-        system: ActorSystem[_]
-    ) = new KafkaMock[Command, Response]()*/
-
     implicit def toMockProducer[Response](
         implicit
         responseSerialization: Serialization[Response],
@@ -58,10 +50,7 @@ object KafkaMock {
           .to(
             Flow[Response]
               .map(responseSerialization.serialize(_))
-              .to(Sink.foreach { e =>
-                println(s"TRIGGERING ON MESSAGE of kafkaMockRequirements ${e}")
-                kafkaMockRequirements.onMessage(topic)(e)
-              })
+              .to(Sink foreach kafkaMockRequirements.onMessage(topic))
           )
           .run
     }
@@ -72,11 +61,9 @@ object KafkaMock {
         kafkaMockRequirements: KafkaMockRequirements,
         system: ActorSystem[_]
     ): MessageProcessor[Command] = new MessageProcessor[Command] {
-      println("at toMockConsumer")
       def run(topic: String, group: String)(
           callback: Command => Future[Either[String, Unit]]
       ): (Option[UniqueKillSwitch], Future[Done]) = {
-        println("RUNNING CONSUMER at toMockConsumer")
         kafkaMockRequirements.receiveMessagesFrom(
           KafkaMock.SubscribeTo(
             topic, { message: String =>

@@ -8,7 +8,7 @@ import play.api.libs.json.{Format, Json}
 
 import scala.concurrent.Future
 
-object Main extends App {
+private[kafka] object ExampleOfUse extends App {
   case class Bob(id: String = "1")
   implicit object Bob extends `JSON Serialization`[Bob] {
     val example = Bob()

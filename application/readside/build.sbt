@@ -17,8 +17,11 @@ enablePlugins(DockerPlugin)
 libraryDependencies += ("ch.qos.logback" % "logback-classic" % "1.2.3")
 libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.2.3"
 
-libraryDependencies += ("infrastructure" %% "kafka" % "1.0.0")
-libraryDependencies += ("infrastructure" %% "http" % "1.0.0")
 libraryDependencies += ("domain" %% "domain" % "1.0.0")
+
+libraryDependencies += ("infrastructure" %% "kafka" % "1.0.0" % "compile->compile;test->test")
+libraryDependencies += ("infrastructure" %% "http" % "1.0.0" % "compile->compile;test->test")
+libraryDependencies += ("infrastructure" %% "microservice" % "1.0.0" % "compile->compile;test->test")
+
 fork / run := true
 connectInput / run := true

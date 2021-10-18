@@ -19,10 +19,8 @@ class InmemDurableStateStore[A] extends DurableStateUpdateStore[A] {
 
   val store = new TrieMap[String, A]()
 
-  def getObject(persistenceId: String): Future[GetObjectResult[A]] = {
-    println("READING MIGUEL")
+  def getObject(persistenceId: String): Future[GetObjectResult[A]] =
     Future.successful(GetObjectResult(store.get(persistenceId), 0))
-  }
 
   def upsertObject(persistenceId: String, seqNr: Long, value: A, tag: String): Future[Done] =
     Future.successful(store.put(persistenceId, value) match {

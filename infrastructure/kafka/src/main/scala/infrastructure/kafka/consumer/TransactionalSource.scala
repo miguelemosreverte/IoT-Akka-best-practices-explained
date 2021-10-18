@@ -22,7 +22,6 @@ class TransactionalSource[Command]()(implicit requirements: KafkaRequirements, d
   def run(topic: String,
           group: String)(callback: Command => Future[Either[String, Unit]]): (UniqueKillSwitch, Future[Done]) = {
 
-    println(s"RUNNING TRANSACTIONAL SOURCE for topic ${topic} -- group ${group}")
     val `topic to commit in case of errors` = s"${topic}_transactional_error"
     val `topic to commit in case of deserialization error` = s"${topic}_transactional_deserialization_error"
     val `topic to commit in case of success` = s"${topic}_transactional_success"
@@ -52,12 +51,10 @@ class TransactionalSource[Command]()(implicit requirements: KafkaRequirements, d
 
     source
       .mapAsync(1) { (msg: ConsumerMessage.TransactionalMessage[String, String]) =>
-        println(s"RECEIVED MESSAGE FROM KAFKA ${msg.record.value()}")
         for {
           output <- process(callback)(topic, msg.record.value)
         } yield {
           log(output)
-          println(s"COMMIT ${msg.record.value()} ${output} ${commit(msg)(output)}")
           commit(msg)(output)
         } // TODO add Future recover that does not commit
       }

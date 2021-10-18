@@ -60,6 +60,13 @@ object Device {
                     )
                   )
                 case _ =>
+                  println(s"""
+                      |
+                      |
+                      |Was going to inform but state either dont hasDevice or dont hasRecords:
+                      |${state}
+                      |
+                      |""".stripMargin)
               }
               println(s"Scheduling next inform in ${in}")
               scheduleNextInform(in)
@@ -78,6 +85,10 @@ object Device {
               state match {
                 case state: hasDevice with hasRecords =>
                   Effect.persist(DeviceRecords(state.device, state.records :+ record)).thenRun { state =>
+                    replyTo ! Right()
+                  }
+                case state: hasDevice =>
+                  Effect.persist(DeviceRecords(state.device, Seq(record))).thenRun { state =>
                     replyTo ! Right()
                   }
                 case _ =>

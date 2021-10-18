@@ -75,15 +75,12 @@ class RocksDBStateStore[A: ClassTag](
   def getObject(persistenceId: String): Future[GetObjectResult[A]] = {
     RocksDBStateStore.get(persistenceId) match {
       case None =>
-        println("HERE 1")
         Future.successful(GetObjectResult(None, 0))
       case Some(r) =>
         deserialize(r.payload.toArray, r.serId, r.serManifiest) match {
           case Failure(exception) =>
-            println(s"HERE 3 ${exception.getMessage}")
             Future.failed(exception)
           case Success(value) =>
-            println(s"HERE 4 ${value}")
             Future successful GetObjectResult(Some(value), 0)
         }
 
